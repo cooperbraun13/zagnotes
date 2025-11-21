@@ -1,6 +1,11 @@
 import express from "express";
 import path from "path";
+import { fileURLToPath } from "url";
 import { renderHome } from "./views/home.js";
+
+// esm doesn't have __dirname, so i made it myself
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 

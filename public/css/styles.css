@@ -1,0 +1,46 @@
+body {
+  font-family: Roboto, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #f5f5f7;
+}
+
+header {
+  padding: 1rem 1.5rem;
+  background: #041e42;
+  color: #fff;
+}
+
+header h1 {
+  margin: 0 0 0.5rem;
+}
+
+nav a {
+  color: #f0f7c0;
+  margin-right: 1rem;
+  text-decoration: none;
+}
+
+nav a:hover {
+  text-decoration: underline;
+}
+
+main {
+  padding: 1.5rem;
+}
+
+.resource-table {
+  border-collapse: collapse;
+  width: 100%;
+  background: #fff;
+}
+
+.resource-table th,
+.resource-table td {
+  border: 1px solid #ddd;
+  padding: 0.5rem;
+}
+
+.resource-table th {
+  background: #eee;
+}
