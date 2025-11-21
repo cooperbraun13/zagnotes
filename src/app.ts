@@ -1,5 +1,6 @@
 import express from "express";
 import path from "path";
+import { renderHome } from "./views/home.js";
 
 const app = express();
 
