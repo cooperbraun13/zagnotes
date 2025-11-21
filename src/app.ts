@@ -1,5 +1,6 @@
 import express from "express";
 import path from "path";
+import usersRouter from "./routes/users.js";
 import { fileURLToPath } from "url";
 import { renderHome } from "./views/home.js";
 
@@ -23,5 +24,6 @@ app.get("/", (req, res) => {
 });
 
 // mount routers (will implement routes later)
+app.use("/users", usersRouter);
 
 export default app;

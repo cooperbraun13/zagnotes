@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { query } from "../db.js";
-import { renderUserList, renderUserCreateForm } from "./users.js";
+import { renderUserList, renderUserCreateForm } from "../views/users.js";
 
 const router = Router();
 
@@ -15,7 +15,7 @@ router.get("/", async (req, res) => {
       created_at: string;
     }>(`
       SELECT user_id, first_name, last_name, zagmail, created_at 
-      FROM user 
+      FROM user_account 
       ORDER BY created_at DESC
     `);
     const html = renderUserList(users);
@@ -39,7 +39,7 @@ router.post("/", async (req, res) => {
   try {
     await query(
       `
-      INSERT INTO user(first_name, last_name, zagmail)
+      INSERT INTO user_account(first_name, last_name, zagmail)
       VALUES ($1, $2, $3)
       `,
       [first_name, last_name, zagmail]

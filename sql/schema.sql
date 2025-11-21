@@ -1,4 +1,16 @@
-CREATE TABLE user (
+DROP TABLE IF EXISTS study_group_member CASCADE;
+DROP TABLE IF EXISTS study_group CASCADE;
+DROP TABLE IF EXISTS flag CASCADE;
+DROP TABLE IF EXISTS comment CASCADE;
+DROP TABLE IF EXISTS rating CASCADE;
+DROP TABLE IF EXISTS resource_tag CASCADE;
+DROP TABLE IF EXISTS tag CASCADE;
+DROP TABLE IF EXISTS resource CASCADE;
+DROP TABLE IF EXISTS section CASCADE;
+DROP TABLE IF EXISTS course CASCADE;
+DROP TABLE IF EXISTS user_account CASCADE;
+
+CREATE TABLE user_account (
   user_id SERIAL,
   first_name VARCHAR(50) NOT NULL,
   last_name VARCHAR(50) NOT NULL,
@@ -7,26 +19,6 @@ CREATE TABLE user (
   PRIMARY KEY (user_id),
   CONSTRAINT valid_zagmail CHECK (zagmail LIKE '%@zagmail.gonzaga.edu'),
   CONSTRAINT valid_name CHECK (first_name <> '' AND last_name <> '')
-);
-
-CREATE TABLE resource (
-  resource_id SERIAL,
-  section_id INT NOT NULL,
-  uploader_id INT NOT NULL,
-  title VARCHAR(100) NOT NULL,
-  DESCRIPTION VARCHAR(255) NOT NULL,
-  resource_type VARCHAR(50) NOT NULL,
-  resource_url VARCHAR(255) NOT NULL,
-  uploaded_at TIMESTAMP NOT NULL DEFAULT NOW(),
-  is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
-  deleted_at TIMESTAMP,
-  deleted_by INT,
-  PRIMARY KEY (resource_id),
-  FOREIGN KEY (section_id) REFERENCES section(section_id),
-  FOREIGN KEY (uploader_id) REFERENCES user(user_id),
-  FOREIGN KEY (deleted_by) REFERENCES user(user_id),
-  CONSTRAINT valid_title CHECK (title <> ''),
-  CONSTRAINT valid_description CHECK (description <> '')
 );
 
 CREATE TABLE course (
@@ -55,16 +47,24 @@ CREATE TABLE section (
   CONSTRAINT valid_professor_name CHECK (professor_name <> '')
 );
 
-CREATE TABLE resource_tag (
-  resource_id INT NOT NULL,
-  tag_id INT NOT NULL,
-  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-  PRIMARY KEY (resource_id, tag_id),
-  FOREIGN KEY (resource_id) REFERENCES resource(resource_id),
-  FOREIGN KEY (tag_id) REFERENCES tag(tag_id),
-  CONSTRAINT valid_tag CHECK (tag <> ''),
-  CONSTRAINT valid_resource_id CHECK (resource_id > 0),
-  CONSTRAINT valid_tag_id CHECK (tag_id > 0)
+CREATE TABLE resource (
+  resource_id SERIAL,
+  section_id INT NOT NULL,
+  uploader_id INT NOT NULL,
+  title VARCHAR(100) NOT NULL,
+  DESCRIPTION VARCHAR(255) NOT NULL,
+  resource_type VARCHAR(50) NOT NULL,
+  resource_url VARCHAR(255) NOT NULL,
+  uploaded_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
+  deleted_at TIMESTAMP,
+  deleted_by INT,
+  PRIMARY KEY (resource_id),
+  FOREIGN KEY (section_id) REFERENCES section(section_id),
+  FOREIGN KEY (uploader_id) REFERENCES user_account(user_id),
+  FOREIGN KEY (deleted_by) REFERENCES user_account(user_id),
+  CONSTRAINT valid_resource_title CHECK (title <> ''),
+  CONSTRAINT valid_resource_description CHECK (description <> '')
 );
 
 CREATE TABLE tag (
@@ -75,6 +75,17 @@ CREATE TABLE tag (
   CONSTRAINT valid_tag_name CHECK (tag_name <> '')
 );
 
+CREATE TABLE resource_tag (
+  resource_id INT NOT NULL,
+  tag_id INT NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (resource_id, tag_id),
+  FOREIGN KEY (resource_id) REFERENCES resource(resource_id),
+  FOREIGN KEY (tag_id) REFERENCES tag(tag_id),
+  CONSTRAINT valid_resource_tag_resource_id CHECK (resource_id > 0),
+  CONSTRAINT valid_resource_tag_tag_id CHECK (tag_id > 0)
+);
+
 CREATE TABLE rating (
   rating_id SERIAL,
   resource_id INT NOT NULL,
@@ -83,10 +94,10 @@ CREATE TABLE rating (
   created_at TIMESTAMP NOT NULL DEFAULT NOW(),
   PRIMARY KEY (rating_id),
   FOREIGN KEY (resource_id) REFERENCES resource(resource_id),
-  FOREIGN KEY (user_id) REFERENCES user(user_id),
+  FOREIGN KEY (user_id) REFERENCES user_account(user_id),
   CONSTRAINT valid_rating CHECK (rating >= 1 AND rating <= 5),
-  CONSTRAINT valid_resource_id CHECK (resource_id > 0),
-  CONSTRAINT valid_user_id CHECK (user_id > 0)
+  CONSTRAINT valid_rating_resource_id CHECK (resource_id > 0),
+  CONSTRAINT valid_rating_user_id CHECK (user_id > 0)
 );
 
 CREATE TABLE comment (
@@ -97,10 +108,10 @@ CREATE TABLE comment (
   created_at TIMESTAMP NOT NULL DEFAULT NOW(),
   PRIMARY KEY (comment_id),
   FOREIGN KEY (resource_id) REFERENCES resource(resource_id),
-  FOREIGN KEY (user_id) REFERENCES user(user_id),
+  FOREIGN KEY (user_id) REFERENCES user_account(user_id),
   CONSTRAINT valid_comment_text CHECK (comment_text <> ''),
-  CONSTRAINT valid_resource_id CHECK (resource_id > 0),
-  CONSTRAINT valid_user_id CHECK (user_id > 0)
+  CONSTRAINT valid_comment_resource_id CHECK (resource_id > 0),
+  CONSTRAINT valid_comment_user_id CHECK (user_id > 0)
 );
 
 CREATE TABLE flag (
@@ -114,14 +125,14 @@ CREATE TABLE flag (
   resolved_at TIMESTAMP,
   PRIMARY KEY (flag_id),
   FOREIGN KEY (resource_id) REFERENCES resource(resource_id),
-  FOREIGN KEY (flagger_user_id) REFERENCES user(user_id),
-  FOREIGN KEY (resolved_by) REFERENCES user(user_id),
-  CONSTRAINT valid_flag_reason CHECK (flag_reason <> ''),
-  CONSTRAINT valid_resource_id CHECK (resource_id > 0),
+  FOREIGN KEY (flagger_user_id) REFERENCES user_account(user_id),
+  FOREIGN KEY (resolved_by) REFERENCES user_account(user_id),
+  CONSTRAINT valid_flag_reason CHECK (reason <> ''),
+  CONSTRAINT valid_flag_resource_id CHECK (resource_id > 0),
   CONSTRAINT valid_flagger_user_id CHECK (flagger_user_id > 0),
-  CONSTRAINT valid_status CHECK (status IN ('pending', 'resolved', 'dismissed')),
-  CONSTRAINT valid_resolved_by CHECK (resolved_by IS NULL OR resolved_by > 0)
-)
+  CONSTRAINT valid_flag_status CHECK (status IN ('pending', 'resolved', 'dismissed')),
+  CONSTRAINT valid_flag_resolved_by CHECK (resolved_by IS NULL OR resolved_by > 0)
+);
 
 CREATE TABLE study_group (
   group_id SERIAL,
@@ -130,9 +141,9 @@ CREATE TABLE study_group (
   owner_user_id INT NOT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT NOW(),
   PRIMARY KEY (group_id),
-  FOREIGN KEY (owner_user_id) REFERENCES user(user_id),
-  CONSTRAINT valid_name CHECK (name <> ''),
-  CONSTRAINT valid_description CHECK (description <> ''),
+  FOREIGN KEY (owner_user_id) REFERENCES user_account(user_id),
+  CONSTRAINT valid_group_name CHECK (name <> ''),
+  CONSTRAINT valid_group_description CHECK (description <> ''),
   CONSTRAINT valid_owner_user_id CHECK (owner_user_id > 0)
 );
 
@@ -143,8 +154,8 @@ CREATE TABLE study_group_member (
   joined_at TIMESTAMP NOT NULL DEFAULT NOW(),
   PRIMARY KEY (group_id, user_id),
   FOREIGN KEY (group_id) REFERENCES study_group(group_id),
-  FOREIGN KEY (user_id) REFERENCES user(user_id),
-  CONSTRAINT valid_role CHECK (role IN ('owner', 'member')),
-  CONSTRAINT valid_group_id CHECK (group_id > 0),
-  CONSTRAINT valid_user_id CHECK (user_id > 0)
+  FOREIGN KEY (user_id) REFERENCES user_account(user_id),
+  CONSTRAINT valid_member_role CHECK (role IN ('owner', 'member')),
+  CONSTRAINT valid_member_group_id CHECK (group_id > 0),
+  CONSTRAINT valid_member_user_id CHECK (user_id > 0)
 );
