@@ -7,14 +7,16 @@ const router = Router();
 // list users
 router.get("/", async (req, res) => {
   try {
+    console.log("Attempting to fetch users from database...");
     const users = await query<{
       user_id: number;
       first_name: string;
       last_name: string;
       zagmail: string;
+      major: string;
       created_at: string;
     }>(`
-      SELECT user_id, first_name, last_name, zagmail, created_at 
+      SELECT user_id, first_name, last_name, zagmail, major, created_at 
       FROM user_account 
       ORDER BY created_at DESC
     `);
@@ -22,7 +24,7 @@ router.get("/", async (req, res) => {
     res.send(html);
   } catch (error) {
     console.error("Error fetching users:", error);
-    res.status(500).json({ error: "Failed to fetch users" });
+    res.status(500).json({ error: "Failed to fetch users", details: error instanceof Error ? error.message : String(error) });
   }
 });
 
@@ -34,15 +36,15 @@ router.get("/new", (req, res) => {
 
 // handle create-user form submission
 router.post("/", async (req, res) => {
-  const { first_name, last_name, zagmail } = req.body;
+  const { first_name, last_name, zagmail, major } = req.body;
 
   try {
     await query(
       `
-      INSERT INTO user_account(first_name, last_name, zagmail)
-      VALUES ($1, $2, $3)
+      INSERT INTO user_account(first_name, last_name, zagmail, major)
+      VALUES ($1, $2, $3, $4)
       `,
-      [first_name, last_name, zagmail]
+      [first_name, last_name, zagmail, major]
     );
     res.redirect("/users");
   } catch (error) {

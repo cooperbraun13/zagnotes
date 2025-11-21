@@ -15,6 +15,7 @@ CREATE TABLE user_account (
   first_name VARCHAR(50) NOT NULL,
   last_name VARCHAR(50) NOT NULL,
   zagmail VARCHAR(100) NOT NULL UNIQUE,
+  major VARCHAR(100) NOT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT NOW(),
   PRIMARY KEY (user_id),
   CONSTRAINT valid_zagmail CHECK (zagmail LIKE '%@zagmail.gonzaga.edu'),

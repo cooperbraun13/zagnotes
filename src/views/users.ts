@@ -5,6 +5,7 @@ export type UserRow = {
   first_name: string;
   last_name: string;
   zagmail: string;
+  major: string;
   created_at: string;
 };
 
@@ -12,12 +13,13 @@ export function renderUserList(users: UserRow[]): string {
   const rowsHtml =
     users.length === 0
       ? "<p>No users yet. Create one below</p>"
-      : `<table class="user-table">
+      : `<table>
           <thead>
             <tr>
               <th>ID</th>
               <th>Name</th>
               <th>Zagmail</th>
+              <th>Major</th>
               <th>Created At</th>
             </tr>
           </thead>
@@ -29,6 +31,7 @@ export function renderUserList(users: UserRow[]): string {
                     <td>${user.user_id}</td>
                     <td>${user.first_name} ${user.last_name}</td>
                     <td>${user.zagmail}</td>
+                    <td>${user.major}</td>
                     <td>${new Date(user.created_at).toLocaleDateString()}</td>
                   </tr>
                 `
@@ -59,17 +62,18 @@ function renderUserCreateFormBody(): string {
         First Name:
         <input type="text" name="first_name" required />
       </label>
-      <br />
       <label>
         Last Name:
         <input type="text" name="last_name" required />
       </label>
-      <br />
       <label>
         Zagmail:
         <input type="email" name="zagmail" required />
       </label>
-      <br />
+      <label>
+        Major:
+        <input type="text" name="major" required />
+      </label>
       <button type="submit">Create User</button>
     </form>
   `;

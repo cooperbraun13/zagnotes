@@ -17,7 +17,7 @@ export function renderHome(): string {
         <li><a href="/analytics/top-courses">View Top Courses</a></li>
         <li><a href="/analytics/top-contributors">View Top Contributors</a></li>
       </ul>
-    <section>
+    </section>
   `;
   return renderLayout("ZagNotes - Home", body);
 }
