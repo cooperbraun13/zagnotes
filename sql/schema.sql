@@ -1,13 +1,12 @@
 DROP TABLE IF EXISTS study_group_member CASCADE;
-DROP TABLE IF EXISTS study_group CASCADE;
 DROP TABLE IF EXISTS flag CASCADE;
 DROP TABLE IF EXISTS comment CASCADE;
 DROP TABLE IF EXISTS rating CASCADE;
 DROP TABLE IF EXISTS resource_tag CASCADE;
 DROP TABLE IF EXISTS tag CASCADE;
 DROP TABLE IF EXISTS resource CASCADE;
+DROP TABLE IF EXISTS study_group CASCADE;
 DROP TABLE IF EXISTS section CASCADE;
-DROP TABLE IF EXISTS course CASCADE;
 DROP TABLE IF EXISTS user_account CASCADE;
 
 CREATE TABLE user_account (
@@ -22,30 +21,35 @@ CREATE TABLE user_account (
   CONSTRAINT valid_name CHECK (first_name <> '' AND last_name <> '')
 );
 
-CREATE TABLE course (
-  course_id SERIAL,
-  course_title VARCHAR(100) NOT NULL,
-  course_number VARCHAR(10) NOT NULL,
-  dept_code VARCHAR(10) NOT NULL,
-  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-  PRIMARY KEY (course_id),
-  CONSTRAINT valid_course_title CHECK (course_title <> ''),
-  CONSTRAINT valid_course_number CHECK (course_number <> ''),
-  CONSTRAINT valid_dept_code CHECK (dept_code <> '')
-);
-
 CREATE TABLE section (
   section_id SERIAL,
-  course_id INT NOT NULL,
+  course_code VARCHAR(10) NOT NULL,
+  course_title VARCHAR(100) NOT NULL,
   term VARCHAR(50) NOT NULL,
+  year INT NOT NULL,
   section_code VARCHAR(10) NOT NULL,
   professor_name VARCHAR(100) NOT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT NOW(),
   PRIMARY KEY (section_id),
-  FOREIGN KEY (course_id) REFERENCES course(course_id),
-  CONSTRAINT valid_term CHECK (term IN ('winter', 'spring', 'summer', 'fall')),
+  CONSTRAINT valid_course_code CHECK (course_code <> ''),
+  CONSTRAINT valid_course_title CHECK (course_title <> ''),
+  CONSTRAINT valid_term CHECK (term IN ('Fall', 'Spring', 'Summer')),
+  CONSTRAINT valid_year CHECK (year > 2024),
   CONSTRAINT valid_section_code CHECK (section_code <> ''),
   CONSTRAINT valid_professor_name CHECK (professor_name <> '')
+);
+
+CREATE TABLE study_group (
+  group_id SERIAL,
+  name VARCHAR(100) NOT NULL,
+  description VARCHAR(255) NOT NULL,
+  owner_user_id INT NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (group_id),
+  FOREIGN KEY (owner_user_id) REFERENCES user_account(user_id),
+  CONSTRAINT valid_group_name CHECK (name <> ''),
+  CONSTRAINT valid_group_description CHECK (description <> ''),
+  CONSTRAINT valid_owner_user_id CHECK (owner_user_id > 0)
 );
 
 CREATE TABLE resource (
@@ -60,10 +64,12 @@ CREATE TABLE resource (
   is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
   deleted_at TIMESTAMP,
   deleted_by INT,
+  group_id INT,
   PRIMARY KEY (resource_id),
   FOREIGN KEY (section_id) REFERENCES section(section_id),
   FOREIGN KEY (uploader_id) REFERENCES user_account(user_id),
   FOREIGN KEY (deleted_by) REFERENCES user_account(user_id),
+  FOREIGN KEY (group_id) REFERENCES study_group(group_id),
   CONSTRAINT valid_resource_title CHECK (title <> ''),
   CONSTRAINT valid_resource_description CHECK (description <> '')
 );
@@ -133,19 +139,6 @@ CREATE TABLE flag (
   CONSTRAINT valid_flagger_user_id CHECK (flagger_user_id > 0),
   CONSTRAINT valid_flag_status CHECK (status IN ('pending', 'resolved', 'dismissed')),
   CONSTRAINT valid_flag_resolved_by CHECK (resolved_by IS NULL OR resolved_by > 0)
-);
-
-CREATE TABLE study_group (
-  group_id SERIAL,
-  name VARCHAR(100) NOT NULL,
-  description VARCHAR(255) NOT NULL,
-  owner_user_id INT NOT NULL,
-  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-  PRIMARY KEY (group_id),
-  FOREIGN KEY (owner_user_id) REFERENCES user_account(user_id),
-  CONSTRAINT valid_group_name CHECK (name <> ''),
-  CONSTRAINT valid_group_description CHECK (description <> ''),
-  CONSTRAINT valid_owner_user_id CHECK (owner_user_id > 0)
 );
 
 CREATE TABLE study_group_member (

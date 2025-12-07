@@ -12,9 +12,9 @@ export function renderLayout(title: string, body: string): string {
       <nav>
         <a href="/">Home</a>
         <a href="/users">Users</a>
-        <a href="/sections/1/resources">Sections</a>
-        <a href="/resources/search">Search</a>
-        <a href="/analytics/top-courses">Top Resources</a>
+        <a href="/sections">Sections</a>
+        <a href="/groups">Study Groups</a>
+        <a href="/analytics/top-resources">Top Resources</a>
         <a href="/analytics/top-contributors">Top Contributors</a>
       </nav>
       <hr />

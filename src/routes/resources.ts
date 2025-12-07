@@ -1,57 +1,118 @@
 import { Router } from "express";
 import { query } from "../db.js";
-import {} from "../views/resources.js";
 
 const router = Router();
 
-// list all sections
-router.get("/", async (req, res) => {
-  try {
-    console.log("Attempting to fetch resources from database...");
-    const sections = await query<{
-      section_id: number;
-      course_id: number;
-      section_code: number;
-      term: string;
-      prof_name: string;
-    }>(`
-      SELECT section_id, course_id, section_code, term, prof_name 
-      FROM section 
-      ORDER BY created_at DESC
-    `);
-    const html = renderSectionList(sections);
-    res.send(html);
-  } catch (error) {
-    console.error("Error fetching sections:", error);
-    res.status(500).json({
-      error: "Failed to fetch sections",
-      details: error instanceof Error ? error.message : String(error),
-    });
+// create resource under a section
+router.post("/section/:sectionId", async (req, res) => {
+  const sectionId = Number(req.params.sectionId);
+  const { title, description, resource_type, resource_url, uploader_id } = req.body;
+  if (Number.isNaN(sectionId)) {
+    res.status(400).send("Invalid section id");
+    return;
   }
-});
-
-// show create-section form
-router.get("/new", (req, res) => {
-  const html = renderSectionCreateForm();
-  res.send(html);
-});
-
-// handle create-section form submission
-router.post("/", async (req, res) => {
-  const { section_code, term, prof_name } = req.body;
-
   try {
     await query(
       `
-      INSERT INTO section(section_code, term, prof_name)
+      INSERT INTO resource(section_id, uploader_id, title, description, resource_type, resource_url)
+      VALUES ($1, $2, $3, $4, $5, $6)
+      `,
+      [sectionId, uploader_id, title, description, resource_type, resource_url]
+    );
+    res.redirect(`/sections/${sectionId}`);
+  } catch (error) {
+    console.error("Error creating resource:", error);
+    res.status(500).json({ error: "Failed to create resource" });
+  }
+});
+
+// create resource under a study group
+router.post("/group/:groupId", async (req, res) => {
+  const groupId = Number(req.params.groupId);
+  const { section_id, title, description, resource_type, resource_url, uploader_id } = req.body;
+  if (Number.isNaN(groupId)) {
+    res.status(400).send("Invalid group id");
+    return;
+  }
+  try {
+    await query(
+      `
+      INSERT INTO resource(section_id, uploader_id, title, description, resource_type, resource_url, group_id)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
+      `,
+      [section_id, uploader_id, title, description, resource_type, resource_url, groupId]
+    );
+    res.redirect(`/groups/${groupId}`);
+  } catch (error) {
+    console.error("Error creating group resource:", error);
+    res.status(500).json({ error: "Failed to create resource" });
+  }
+});
+
+// add comment for section resource
+router.post("/section/:sectionId/comments", async (req, res) => {
+  const sectionId = Number(req.params.sectionId);
+  const { resource_id, user_id, comment_text, rating } = req.body;
+  try {
+    const ratingValue = Number(rating);
+    if (!rating || Number.isNaN(ratingValue) || ratingValue < 1 || ratingValue > 5) {
+      res.status(400).send("Rating must be between 1 and 5 when commenting");
+      return;
+    }
+
+    // ensure a rating is recorded
+    await query(
+      `
+      INSERT INTO rating(resource_id, user_id, rating)
       VALUES ($1, $2, $3)
       `,
-      [section_code, term, prof_name]
+      [resource_id, user_id, ratingValue]
     );
-    res.redirect("/sections");
+
+    await query(
+      `
+      INSERT INTO comment(resource_id, user_id, comment_text)
+      VALUES ($1, $2, $3)
+      `,
+      [resource_id, user_id, comment_text]
+    );
+    res.redirect(`/sections/${sectionId}`);
   } catch (error) {
-    console.error("Error creating section:", error);
-    res.status(500).json({ error: "Failed to create section" });
+    console.error("Error creating comment:", error);
+    res.status(500).json({ error: "Failed to create comment" });
+  }
+});
+
+// add comment for group resource
+router.post("/group/:groupId/comments", async (req, res) => {
+  const groupId = Number(req.params.groupId);
+  const { resource_id, user_id, comment_text, rating } = req.body;
+  try {
+    const ratingValue = Number(rating);
+    if (!rating || Number.isNaN(ratingValue) || ratingValue < 1 || ratingValue > 5) {
+      res.status(400).send("Rating must be between 1 and 5 when commenting");
+      return;
+    }
+
+    await query(
+      `
+      INSERT INTO rating(resource_id, user_id, rating)
+      VALUES ($1, $2, $3)
+      `,
+      [resource_id, user_id, ratingValue]
+    );
+
+    await query(
+      `
+      INSERT INTO comment(resource_id, user_id, comment_text)
+      VALUES ($1, $2, $3)
+      `,
+      [resource_id, user_id, comment_text]
+    );
+    res.redirect(`/groups/${groupId}`);
+  } catch (error) {
+    console.error("Error creating comment:", error);
+    res.status(500).json({ error: "Failed to create comment" });
   }
 });
 
