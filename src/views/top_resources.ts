@@ -26,7 +26,11 @@ export function renderTopResources(resources: {
                 (r) => `
                   <tr>
                     <td>${r.title}</td>
-                    <td>${r.avg_rating.toFixed(1)}</td>
+                    <td>${
+                      r.avg_rating === null || Number.isNaN(Number(r.avg_rating))
+                        ? "—"
+                        : Number(r.avg_rating).toFixed(1)
+                    }</td>
                     <td>${r.course_code}</td>
                     <td>${r.section_code}</td>
                     <td>${r.uploader}</td>
