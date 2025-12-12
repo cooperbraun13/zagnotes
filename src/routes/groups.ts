@@ -12,6 +12,7 @@ router.get("/", async (_req, res) => {
       SELECT group_id, name, description, owner_user_id
       FROM study_group
       ORDER BY created_at DESC
+      LIMIT 15
       `
     );
     res.send(renderGroupList(groups));
@@ -89,6 +90,7 @@ router.get("/:groupId", async (req, res) => {
       WHERE r.group_id = $1 AND r.is_deleted = FALSE
       GROUP BY r.resource_id, ua.first_name, ua.last_name
       ORDER BY r.uploaded_at DESC
+      LIMIT 15
       `,
       [groupId]
     );
@@ -111,6 +113,7 @@ router.get("/:groupId", async (req, res) => {
       JOIN resource r ON r.resource_id = c.resource_id
       WHERE r.group_id = $1
       ORDER BY c.created_at DESC
+      LIMIT 20
       `,
       [groupId]
     );

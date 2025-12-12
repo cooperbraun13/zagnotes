@@ -20,6 +20,7 @@ router.get("/", async (req, res) => {
       SELECT user_id, first_name, last_name, zagmail, major, created_at 
       FROM user_account 
       ORDER BY created_at DESC
+      LIMIT 10
     `);
 
     // server-render the html list

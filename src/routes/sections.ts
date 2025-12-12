@@ -17,6 +17,7 @@ router.get("/", async (req, res) => {
         AND ($2::text IS NULL OR professor_name ILIKE '%' || $2 || '%')
         AND ($3::text IS NULL OR term ILIKE '%' || $3 || '%')
       ORDER BY created_at DESC
+      LIMIT 15
       `,
       [
         course_code ? String(course_code) : null,
@@ -104,6 +105,7 @@ router.get("/:sectionId", async (req, res) => {
       WHERE r.section_id = $1 AND r.is_deleted = FALSE
       GROUP BY r.resource_id, ua.first_name, ua.last_name
       ORDER BY r.uploaded_at DESC
+      LIMIT 15
       `,
       [sectionId]
     );
@@ -126,6 +128,7 @@ router.get("/:sectionId", async (req, res) => {
       JOIN resource r ON r.resource_id = c.resource_id
       WHERE r.section_id = $1
       ORDER BY c.created_at DESC
+      LIMIT 20
       `,
       [sectionId]
     );
