@@ -12,9 +12,10 @@ export function renderHome(): string {
     <section>
       <h3>Quick Actions</h3>
       <ul>
-        <li><a href="/sections/1/resources">Browse Sections</a></li>
-        <li><a href="/resources/new">Upload a New Resource</a></li>
-        <li><a href="/analytics/top-courses">View Top Resources</a></li>
+        <li><a href="/sections">Browse Sections</a></li>
+        <li><a href="/groups">Browse Study Groups</a></li>
+        <li><a href="/users">Browse Users</a></li>
+        <li><a href="/analytics/top-resources">View Top Resources</a></li>
         <li><a href="/analytics/top-contributors">View Top Contributors</a></li>
       </ul>
     </section>

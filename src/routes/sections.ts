@@ -13,9 +13,9 @@ router.get("/", async (req, res) => {
       `
       SELECT section_id, course_code, course_title, term, section_code, professor_name
       FROM section
-      WHERE ($1::text IS NULL OR course_code ILIKE '%' || $1 || '%')
-        AND ($2::text IS NULL OR professor_name ILIKE '%' || $2 || '%')
-        AND ($3::text IS NULL OR term ILIKE '%' || $3 || '%')
+      WHERE ($1::text IS NULL OR course_code ILIKE '%' || $1::text || '%')
+        AND ($2::text IS NULL OR professor_name ILIKE '%' || $2::text || '%')
+        AND ($3::text IS NULL OR term ILIKE '%' || $3::text || '%')
       ORDER BY created_at DESC
       LIMIT 15
       `,
