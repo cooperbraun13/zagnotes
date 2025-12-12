@@ -4,7 +4,8 @@ import { renderUserList, renderUserCreateForm } from "../views/users.js";
 
 const router = Router();
 
-// list users
+// GET /users
+// fetch all users from the database, newest first, then render the list view
 router.get("/", async (req, res) => {
   try {
     console.log("Attempting to fetch users from database...");
@@ -20,6 +21,8 @@ router.get("/", async (req, res) => {
       FROM user_account 
       ORDER BY created_at DESC
     `);
+
+    // server-render the html list
     const html = renderUserList(users);
     res.send(html);
   } catch (error) {
@@ -28,13 +31,15 @@ router.get("/", async (req, res) => {
   }
 });
 
-// show create-user form
+// GET /users/new
+// render the 'create user' form
 router.get("/new", (req, res) => {
   const html = renderUserCreateForm();
   res.send(html);
 });
 
-// handle create-user form submission
+// POST /users
+// accepts form submission to create a new user; then redirects back to /users
 router.post("/", async (req, res) => {
   const { first_name, last_name, zagmail, major } = req.body;
 
@@ -46,6 +51,8 @@ router.post("/", async (req, res) => {
       `,
       [first_name, last_name, zagmail, major]
     );
+
+    // after creation, use post/redirect/get pattern to avoid duplicate submissions
     res.redirect("/users");
   } catch (error) {
     console.error("Error creating user:", error);

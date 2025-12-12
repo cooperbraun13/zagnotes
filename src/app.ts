@@ -19,7 +19,7 @@ const app = express();
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-// static files
+// serve static files from the public directory
 app.use("/public", express.static(path.join(__dirname, "..", "public")));
 
 // home page
@@ -28,7 +28,7 @@ app.get("/", (req, res) => {
   res.send(html);
 });
 
-// mount routers (will implement routes later)
+// feature routers
 app.use("/users", usersRouter);
 app.use("/sections", sectionsRouter);
 app.use("/resources", resourcesRouter);

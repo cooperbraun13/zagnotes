@@ -4,6 +4,8 @@ import { renderTopContributors } from "../views/top_contributors.js";
 
 const router = Router();
 
+// GET /analytics/top-contributors
+// fetch the top 10 contributors/uploaders by resource count, then render the list view
 router.get("/", async (_req, res) => {
   try {
     const contributors = await query<{
@@ -24,6 +26,8 @@ router.get("/", async (_req, res) => {
       LIMIT 10
       `
     );
+
+    // render a simple table view
     res.send(renderTopContributors(contributors));
   } catch (error) {
     console.error("Error fetching top contributors:", error);
