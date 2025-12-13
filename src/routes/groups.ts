@@ -133,5 +133,57 @@ router.get("/:groupId", async (req, res) => {
   }
 });
 
+// remove a group member
+router.delete("/:groupId/members/:userId", async (req, res) => {
+  const groupId = Number(req.params.groupId);
+  const userId = Number(req.params.userId);
+  if (Number.isNaN(groupId) || Number.isNaN(userId)) {
+    res.status(400).send("Invalid group id or user id");
+    return;
+  }
+  try {
+    await query(
+      `
+      DELETE FROM study_group_member
+      WHERE group_id = $1 AND user_id = $2
+      `,
+      [groupId, userId]
+    );
+    res.status(200).json({ message: "Member removed from group" });
+  } catch (error) {
+    console.error("Error removing group member:", error);
+    res.status(500).json({ error: "Failed to remove group member" });
+  }
+});
+
+// change a group member's role
+router.put("/:groupId/members/:userId/role", async (req, res) => {
+  const groupId = Number(req.params.groupId);
+  const userId = Number(req.params.userId);
+  const { role } = req.body;
+  if (Number.isNaN(groupId) || Number.isNaN(userId)) {
+    res.status(400).send("Invalid group id or user id");
+    return;
+  }
+  if (!role || !["owner", "member"].includes(role)) {
+    res.status(400).send("Role must be 'owner' or 'member'");
+    return;
+  }
+  try {
+    await query(
+      `
+      UPDATE study_group_member
+      SET role = $1
+      WHERE group_id = $2 AND user_id = $3
+      `,
+      [role, groupId, userId]
+    );
+    res.status(200).json({ message: "Member role updated" });
+  } catch (error) {
+    console.error("Error updating member role:", error);
+    res.status(500).json({ error: "Failed to update member role" });
+  }
+});
+
 export default router;
 
